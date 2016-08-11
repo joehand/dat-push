@@ -1,0 +1,19 @@
+{
+  "name": "dat-push",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "standard && tape test/*.js | tap-spec"
+  },
+  "bin": {
+    "dat-push": "cli.js"
+  },
+  "author": "Joe Hand <joe@hand.email> (https://joeahand.com/)",
+  "license": "MIT",
+  "dependencies": {
+    "dat-js": "^2.0.0",
+    "peer-network": "^1.1.0",
+    "pump": "^1.0.1"
+  }
+}
