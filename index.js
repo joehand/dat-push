@@ -13,7 +13,7 @@ function DatPush (opts) {
 
   var self = this
   self.dir = opts.dir
-  self._dat = Dat({dir: self.dir, discovery: false, live: false})
+  self._dat = Dat({dir: self.dir, discovery: false, watchFiles: false})
   self._dat.on('ready', function () {
     self._initialized = true
   })
@@ -31,7 +31,7 @@ DatPush.prototype.push = function (key, cb) {
   var archive
   var stream = self._network = network.connect(key)
 
-  stream.on('connect', function () {
+  stream.once('connect', function () {
     self._connected = true
     self.emit('connect')
   })
@@ -53,8 +53,11 @@ DatPush.prototype.push = function (key, cb) {
   }
 
   function replicate () {
+    if (!self._connected) return stream.once('connect', replicate)
+
     self._replicating = true
     self.emit('replicating')
+
     stream.write(archive.key)
     pump(stream, archive.replicate(), stream, function (err) {
       if (err) throw err

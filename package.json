@@ -12,7 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "ansi-diff-stream": "^1.1.1",
-    "dat-js": "^2.0.0",
+    "dat-js": "^2.1.1",
     "minimist": "^1.2.0",
     "peer-network": "^1.1.0",
     "pump": "^1.0.1"
