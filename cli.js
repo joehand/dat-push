@@ -1,19 +1,70 @@
 #!/usr/bin/env node
 
 var DatPush = require('.')
+var differ = require('ansi-diff-stream')
 
-var datPush = DatPush({dir: process.cwd()})
-var key = process.argv[2]
+var args = require('minimist')(process.argv.slice(2))
+
+var key = args._[0]
+var dir = args._[1] || process.cwd()
+var datPush = DatPush({dir: dir})
+var diff = differ()
+var lines = [
+  'Waiting for Connection...'
+]
+var progress = ''
 
 datPush.push(key, function (err) {
+  if (err) throw err
+  lines = ['All done. Bye Bye.']
+  diff.write(print())
   process.exit(0)
 })
+
+function print() {
+  if (!lines.length) return ''
+  return lines.join('\n') + '\n' + progress
+}
+
+diff.write(print())
+setInterval(function () {
+  diff.write(print())
+}, 500)
+diff.pipe(process.stdout)
+
 datPush.on('connect', function () {
-  console.log('connected to server')
+  lines[0] = 'Connected to Server: ' + key
+  if (datPush._replicating) lines[1] = 'Uploading Data' // TODO: not this
 })
+
+datPush.on('new-dat', function () {
+  progress = 'No dat here, creating a new dat' // Hacky message overwrite
+})
+
 datPush.on('replicating', function () {
-  console.log('replicating')
+  if (datPush._connected) lines.push('Uploading Data')
+  else lines.push('')
 })
-datPush.on('upload-finished', function () {
-  console.log('upload finished')
+
+datPush.on('progress', function (remote, total) {
+  var percent = remote/total
+  if (datPush._connected) progress = progressBar(percent) + ' ' + Math.round(percent * 100) + '%'
 })
+
+function progressBar (percent) {
+  var width = 30
+  var cap = '>'
+  var ends = ['[', ']']
+  var spacer = Array(width).join(' ')
+  var progressVal = ''
+  var val = Math.round(percent * width)
+
+  if (isFinite(val) && val > 0) {
+    progressVal = Array(val).join('=')
+    progressVal += cap
+  }
+  progressVal += spacer
+  progressVal = progressVal.substring(0, width)
+
+  return ends[0] + progressVal + ends[1]
+}

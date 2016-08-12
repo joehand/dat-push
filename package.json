@@ -11,7 +11,9 @@
   "author": "Joe Hand <joe@hand.email> (https://joeahand.com/)",
   "license": "MIT",
   "dependencies": {
+    "ansi-diff-stream": "^1.1.0",
     "dat-js": "^2.0.0",
+    "minimist": "^1.2.0",
     "peer-network": "^1.1.0",
     "pump": "^1.0.1"
   },
