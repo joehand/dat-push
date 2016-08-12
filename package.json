@@ -1,7 +1,6 @@
 {
   "name": "dat-push",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "standard && tape test/*.js | tap-spec"
@@ -15,5 +14,15 @@
     "dat-js": "^2.0.0",
     "peer-network": "^1.1.0",
     "pump": "^1.0.1"
-  }
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/joehand/dat-push.git"
+  },
+  "bugs": {
+    "url": "https://github.com/joehand/dat-push/issues"
+  },
+  "homepage": "https://github.com/joehand/dat-push#readme",
+  "description": ""
 }
