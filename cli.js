@@ -2,6 +2,7 @@
 
 var DatPush = require('.')
 var differ = require('ansi-diff-stream')
+var chalk = require('chalk')
 
 var args = require('minimist')(process.argv.slice(2))
 
@@ -66,5 +67,6 @@ function progressBar (percent) {
   progressVal += spacer
   progressVal = progressVal.substring(0, width)
 
-  return ends[0] + progressVal + ends[1]
+  if (percent < 1) return ends[0] + chalk.blue(progressVal) + ends[1]
+  return ends[0] + chalk.green(progressVal) + ends[1]
 }
