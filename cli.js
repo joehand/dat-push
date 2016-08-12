@@ -1,9 +1,5 @@
 #!/usr/bin/env node
 
-var DatPush = require('.')
-var differ = require('ansi-diff-stream')
-var chalk = require('chalk')
-
 var args = require('minimist')(process.argv.slice(2))
 
 if (!args._[0]) {
@@ -11,6 +7,10 @@ if (!args._[0]) {
   console.error('Please specify a <server-key>')
   process.exit(1)
 }
+
+var DatPush = require('.')
+var differ = require('ansi-diff-stream')
+var chalk = require('chalk')
 
 var key = args._[0]
 var dir = args._[1] || process.cwd()
