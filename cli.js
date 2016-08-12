@@ -6,6 +6,12 @@ var chalk = require('chalk')
 
 var args = require('minimist')(process.argv.slice(2))
 
+if (!args._[0]) {
+  console.error('Usage: dat-push <server-key> [directory]\n')
+  console.error('Please specify a <server-key>')
+  process.exit(1)
+}
+
 var key = args._[0]
 var dir = args._[1] || process.cwd()
 var datPush = DatPush({dir: dir})
