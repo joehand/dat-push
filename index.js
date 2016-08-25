@@ -14,9 +14,6 @@ function DatPush (opts) {
   var self = this
   self.dir = opts.dir
   self._dat = Dat({dir: self.dir, discovery: false, watchFiles: false})
-  self._dat.on('ready', function () {
-    self._initialized = true
-  })
   self._connected = false
   self._replicating = false
 }
@@ -36,10 +33,7 @@ DatPush.prototype.push = function (key, cb) {
     self.emit('connect')
   })
 
-  if (self._initialized) return run()
-  self._dat.on('ready', function (err) {
-    if (err) throw err
-    self._initialized = true
+  self._dat.open(function () {
     run()
   })
 
