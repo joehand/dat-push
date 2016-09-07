@@ -37,16 +37,16 @@ datPush.push(serverKey, function (err) {
   process.exit(0)
 })
 
-datPush.on('connect', function () {
+datPush.once('connect', function () {
   lines[0] = 'Connected to Server: ' + serverKey
 })
 
-datPush.on('dat-open', function () {
+datPush.once('dat-open', function () {
   if (datPush.dat.resume) lines.push(`Pushing Dat: ${datPush.dat.key.toString('hex')}`)
   else lines.push('No dat in directory, creating a new dat. This could take some time.')
 })
 
-datPush.on('replicating', function () {
+datPush.once('replicating', function () {
   lines.push('\nUploading Data', '') // add extra line for progress bar
 })
 
@@ -55,7 +55,7 @@ datPush.on('progress', function (remote, total) {
   lines[lines.length - 1] = progressBar(percent) + ' ' + Math.round(percent * 100) + '%'
 })
 
-datPush.on('error', function (err) {
+datPush.once('error', function (err) {
   console.error(err)
   process.exit(1)
 })

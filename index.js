@@ -66,9 +66,9 @@ DatPush.prototype.push = function (key, cb) {
         remoteBlocks = update()
         self.emit('progress', remoteBlocks, feed.blocks)
         if (remoteBlocks === feed.blocks) {
-          self.emit('upload-finished')
           stream.end()
           clearInterval(it)
+          self.emit('upload-finished')
           return cb(null)
         }
       }, interval)
