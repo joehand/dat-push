@@ -9,53 +9,55 @@ if (!args._[0]) {
 }
 
 var DatPush = require('.')
-var differ = require('ansi-diff-stream')
+var logger = require('status-logger')
 var chalk = require('chalk')
 
-var key = args._[0]
+var serverKey = args._[0]
 var dir = args._[1] || process.cwd()
 var datPush = DatPush({dir: dir})
-var diff = differ()
-var lines = [
-  'Waiting for Connection...'
-]
-var progress = ''
 
-datPush.push(key, function (err) {
+var lines = [
+  'Waiting for connection to dat-archive server...'
+]
+var log = logger([lines])
+log.print()
+setInterval(function () {
+  log.print()
+}, 200)
+
+datPush.push(serverKey, function (err) {
   if (err) throw err
-  lines = ['All done. Bye Bye.']
-  diff.write(print())
+  log.groups[0] = [
+    `Uploaded to server: ${serverKey}`,
+    `Dat Pushed:`,
+    `  Directory: ${datPush.dat.dir}`,
+    `  Key: ${datPush.dat.archive.key.toString('hex')}`
+  ]
+  log.print()
   process.exit(0)
 })
 
-function print() {
-  if (!lines.length) return ''
-  return lines.join('\n') + '\n' + progress
-}
-
-diff.write(print())
-setInterval(function () {
-  diff.write(print())
-}, 500)
-diff.pipe(process.stdout)
-
 datPush.on('connect', function () {
-  lines[0] = 'Connected to Server: ' + key
-  if (datPush._replicating) lines[1] = 'Uploading Data' // TODO: not this
+  lines[0] = 'Connected to Server: ' + serverKey
 })
 
-datPush.on('new-dat', function () {
-  progress = 'No dat here, creating a new dat' // Hacky message overwrite
+datPush.on('dat-open', function () {
+  if (datPush.dat.resume) lines.push(`Pushing Dat: ${datPush.dat.key.toString('hex')}`)
+  else lines.push('No dat in directory, creating a new dat. This could take some time.')
 })
 
 datPush.on('replicating', function () {
-  if (datPush._connected) lines.push('Uploading Data')
-  else lines.push('')
+  lines.push('\nUploading Data', '') // add extra line for progress bar
 })
 
 datPush.on('progress', function (remote, total) {
   var percent = remote/total
-  if (datPush._connected) progress = progressBar(percent) + ' ' + Math.round(percent * 100) + '%'
+  lines[lines.length - 1] = progressBar(percent) + ' ' + Math.round(percent * 100) + '%'
+})
+
+datPush.on('error', function (err) {
+  console.error(err)
+  process.exit(1)
 })
 
 function progressBar (percent) {

@@ -13,7 +13,7 @@ function DatPush (opts) {
 
   var self = this
   self.dir = opts.dir
-  self._dat = Dat({dir: self.dir, discovery: false, watchFiles: false})
+  self.dat = Dat({dir: self.dir, discovery: false, watchFiles: false})
   self._connected = false
   self._replicating = false
 }
@@ -21,29 +21,29 @@ function DatPush (opts) {
 util.inherits(DatPush, events.EventEmitter)
 
 DatPush.prototype.push = function (key, cb) {
-  if (!key) throw new Error('must specify key')
   if (!cb) cb = function (err) { err && self.emit('error', err) }
+  if (!key) return cb(new Error('must specify key'))
 
   var self = this
   var archive
   var stream = self._network = network.connect(key)
 
-  stream.once('connect', function () {
+  stream.once('connect', function (err) {
+    if (err) return cb(err)
     self._connected = true
     self.emit('connect')
   })
 
-  self._dat.open(function () {
+  self.dat.open(function (err) {
+    if (err) return cb(err)
     run()
   })
 
   function run () {
-    archive = self._dat.archive
-    if (self._dat.resume) archive.finalize(replicate)
-    else {
-      self.emit('new-dat')
-      self._dat.share(replicate)
-    }
+    archive = self.dat.archive
+    self.emit('dat-open')
+    if (self.dat.resume) archive.finalize(replicate)
+    else self.dat.share(replicate)
   }
 
   function replicate () {
@@ -54,20 +54,21 @@ DatPush.prototype.push = function (key, cb) {
 
     stream.write(archive.key)
     pump(stream, archive.replicate(), stream, function (err) {
-      if (err) throw err
+      if (err) return cb(err)
     })
     remoteProgress(archive.content)
 
     function remoteProgress (feed, interval) {
-      if (!interval) interval = 1000
+      if (!interval) interval = 200
       var remoteBlocks = 0
 
-      setInterval(function () {
+      var it = setInterval(function () {
         remoteBlocks = update()
         self.emit('progress', remoteBlocks, feed.blocks)
         if (remoteBlocks === feed.blocks) {
           self.emit('upload-finished')
           stream.end()
+          clearInterval(it)
           return cb(null)
         }
       }, interval)
