@@ -29,7 +29,7 @@ datPush.push(serverKey, function (err) {
   if (err) throw err
   log.groups[0] = [
     `Uploaded to server: ${serverKey}`,
-    `Dat Pushed:`,
+    'Dat Pushed:',
     `  Directory: ${datPush.dat.dir}`,
     `  Key: ${datPush.dat.archive.key.toString('hex')}`
   ]
@@ -51,7 +51,7 @@ datPush.on('replicating', function () {
 })
 
 datPush.on('progress', function (remote, total) {
-  var percent = remote/total
+  var percent = remote / total
   lines[lines.length - 1] = progressBar(percent) + ' ' + Math.round(percent * 100) + '%'
 })
 

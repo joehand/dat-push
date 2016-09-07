@@ -3,7 +3,7 @@
   "version": "2.1.0",
   "main": "index.js",
   "scripts": {
-    "test": "standard && tape test/*.js | tap-spec"
+    "test": "standard"
   },
   "bin": {
     "dat-push": "cli.js"
