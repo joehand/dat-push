@@ -14,8 +14,7 @@ function DatPush (opts) {
   var self = this
   self.dir = opts.dir
   self.dat = Dat({dir: self.dir, discovery: false, watchFiles: false})
-  self._connected = false
-  self._replicating = false
+  self._replicatingServers = []
 }
 
 util.inherits(DatPush, events.EventEmitter)
@@ -23,34 +22,46 @@ util.inherits(DatPush, events.EventEmitter)
 DatPush.prototype.push = function (key, cb) {
   if (!cb) cb = function (err) { err && self.emit('error', err) }
   if (!key) return cb(new Error('must specify key'))
+  // if (self._servers[key]) return Error('?')
 
   var self = this
+  self.datOpen = false
+  var serverStatus = {
+    replicating: false,
+    connected: false
+  }
   var archive
-  var stream = self._network = network.connect(key)
+  var stream = network.connect(key)
 
   stream.once('connect', function (err) {
     if (err) return cb(err)
-    self._connected = true
-    self.emit('connect')
+    serverStatus.connected = true
+    self.emit('connect', key)
   })
 
-  self.dat.open(function (err) {
-    if (err) return cb(err)
-    run()
-  })
+  if (self.datOpen) replicate()
+  else {
+    self.dat.open(function (err) {
+      if (err) return cb(err)
+      self.emit('dat-open')
+      run()
+    })
+  }
 
   function run () {
     archive = self.dat.archive
-    self.emit('dat-open')
+    self.datOpen = true
     if (self.dat.resume) archive.finalize(replicate)
     else self.dat.share(replicate)
   }
 
   function replicate () {
-    if (!self._connected) return stream.once('connect', replicate)
+    self.emit('replication-ready')
+    if (!serverStatus.connected) return stream.once('connect', replicate)
 
-    self._replicating = true
-    self.emit('replicating')
+    serverStatus.replicating = true
+    self._replicatingServers.push(key)
+    self.emit('replicating', key)
 
     stream.write(archive.key)
     pump(stream, archive.replicate(), stream, function (err) {
@@ -64,18 +75,19 @@ DatPush.prototype.push = function (key, cb) {
 
       var it = setInterval(function () {
         remoteBlocks = update()
-        self.emit('progress', remoteBlocks, feed.blocks)
+        self.emit('progress', key, remoteBlocks, feed.blocks)
         if (remoteBlocks === feed.blocks) {
           stream.end()
           clearInterval(it)
-          self.emit('upload-finished')
+          self._replicatingServers.splice(self._replicatingServers.indexOf(key), 1)
+          self.emit('upload-finished', key)
           return cb(null)
         }
       }, interval)
 
       function update () {
         var have = 0
-        var peer = feed.peers[0]
+        var peer = feed.peers[self._replicatingServers.indexOf(key)] // TODO: less hacky way to get correct peer
         if (!peer) return 0
         for (var j = 0; j < feed.blocks; j++) {
           if (peer.remoteBitfield.get(j)) have++
