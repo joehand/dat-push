@@ -67,7 +67,7 @@ datPush.on('connect', function (key) {
 
 datPush.once('replication-ready', function (key) {
   datInfo[0] = 'Pushing Dat'
-  datInfo[1] = `  Key: ${datPush.dat.key.toString('hex')}`
+  datInfo[1] = `  Key: ${datPush.dat.archive.key.toString('hex')}`
   datInfo[2] = `  Size: ${prettyBytes(datPush.dat.archive.content.bytes)}`
   datInfo[3] = '' // padding
 })
