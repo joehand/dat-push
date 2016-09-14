@@ -51,10 +51,7 @@ DatPush.prototype.push = function (key, cb) {
   function run () {
     archive = self.dat.archive
     self.datOpen = true
-    // TODO: should we re-share resumed archived?
-    // this could be confusing but otherwise it'll error if files changed
-    if (self.dat.resume) archive.finalize(replicate)
-    else self.dat.share(replicate)
+    self.dat.share(replicate)
   }
 
   function replicate () {
