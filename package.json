@@ -12,7 +12,7 @@
   "license": "MIT",
   "dependencies": {
     "chalk": "^1.1.3",
-    "dat-js": "^3.3.1",
+    "dat-js": "^4.0.0",
     "minimist": "^1.2.0",
     "peer-network": "^1.1.0",
     "pretty-bytes": "^4.0.2",
