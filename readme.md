@@ -1,6 +1,6 @@
 # dat-download
 
-**WIP** One-time push via Dat. The other side of [dat-download]()
+**WIP** One-time push via Dat. The other side of [dat-download](https://github.com/joehand/dat-download), kind of?
 
 [![npm][npm-image]][npm-url]
 [![travis][travis-image]][travis-url]
@@ -11,10 +11,18 @@
 ```js
 var datPush = require('dat-push')
 
-datDownload(process.cwd(), 'hashbase.io', function (err) {
+datPush(process.cwd(), 'hashbase.io', function (err) {
     if (err) throw err
     console.log('done pushing, maybe? thanks')
 })
+```
+
+## CLI
+
+```
+npm install -g dat-push
+
+dat-push ./existing/dat-dir hashbase.io
 ```
 
 ## License
