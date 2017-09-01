@@ -1,4 +1,4 @@
-# dat-download
+# dat-push
 
 **WIP** One-time push via Dat. The other side of [dat-download](https://github.com/joehand/dat-download), kind of?
 
