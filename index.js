@@ -1,98 +1,83 @@
-var events = require('events')
-var util = require('util')
-var Dat = require('dat-js')
-var network = require('peer-network')()
-var pump = require('pump')
+var assert = require('assert')
+var dns = require('dns')
+var Dat = require('dat-node')
+var debug = require('debug')('dat-push')
 
-module.exports = DatPush
-
-function DatPush (opts) {
-  if (!(this instanceof DatPush)) return new DatPush(opts)
-  if (!opts.dir) throw new Error('Directory required')
-  events.EventEmitter.call(this)
-
-  var self = this
-  self.dir = opts.dir
-  self.dat = Dat({dir: self.dir, discovery: false, watchFiles: false})
-  self._replicatingServers = []
-}
-
-util.inherits(DatPush, events.EventEmitter)
-
-DatPush.prototype.push = function (key, cb) {
-  if (!cb) cb = function (err) { err && self.emit('error', err) }
-  if (!key) return cb(new Error('must specify key'))
-  // if (self._servers[key]) return Error('?')
-
-  var self = this
-  self.datOpen = false
-  var serverStatus = {
-    replicating: false,
-    connected: false
+module.exports = function (datPath, pushTo, cb) {
+  assert.equal(typeof datPath, 'string', 'dat-push: string path required')
+  if (typeof pushTo === 'function') {
+    cb = pushTo
+    pushTo = null
   }
-  var archive
-  var stream = network.connect(key)
+  assert.equal(typeof cb, 'function', 'dat-push: callback required')
+  debug('dir', datPath)
 
-  stream.once('connect', function (err) {
-    if (err) return cb(err)
-    serverStatus.connected = true
-    self.emit('connect', key)
-  })
+  if (!pushTo) return push([])
 
-  if (self.datOpen) replicate()
-  else {
-    self.dat.open(function (err) {
+  var whitelist = []
+  doLookup()
+
+  function doLookup (cb) {
+    var domain = pushTo.pop()
+    if (!domain) return push(whitelist)
+
+    debug('dns lookup', domain)
+    dns.lookup(domain, function (err, address) {
       if (err) return cb(err)
-      self.emit('dat-open')
-      run()
+      whitelist.push(address)
+      debug('resolved', domain, 'to', address)
+      doLookup()
     })
   }
 
-  function run () {
-    archive = self.dat.archive
-    self.datOpen = true
-    self.dat.share(replicate)
-  }
-
-  function replicate () {
-    self.emit('replication-ready')
-    if (!serverStatus.connected) return stream.once('connect', replicate)
-
-    serverStatus.replicating = true
-    self._replicatingServers.push(key)
-    self.emit('replicating', key)
-
-    stream.write(archive.key)
-    pump(stream, archive.replicate(), stream, function (err) {
+  function push (whitelist) {
+    Dat(datPath, {createIfMissing: false}, function (err, dat) {
       if (err) return cb(err)
-    })
-    remoteProgress(archive.content)
+      var stats = dat.trackStats()
+      var activePeers = 0
 
-    function remoteProgress (feed, interval) {
-      if (!interval) interval = 200
-      var remoteBlocks = 0
+      dat.importFiles(function (err) {
+        if (err) return cb(err)
+      })
 
-      var it = setInterval(function () {
-        remoteBlocks = update()
-        self.emit('progress', key, remoteBlocks, feed.blocks)
-        if (remoteBlocks === feed.blocks) {
-          stream.end()
-          clearInterval(it)
-          self._replicatingServers.splice(self._replicatingServers.indexOf(key), 1)
-          self.emit('upload-finished', key)
-          return cb(null)
-        }
-      }, interval)
+      dat.joinNetwork({
+        stream: replicate,
+        whitelist: whitelist
+      }).on('listening', function () {
+        debug('joined network')
+      }).on('connection', function (conn, info) {
+        debug('new connection', info.host)
+        activePeers++
+      })
 
-      function update () {
-        var have = 0
-        var peer = feed.peers[self._replicatingServers.indexOf(key)] // TODO: less hacky way to get correct peer
-        if (!peer) return 0
-        for (var j = 0; j < feed.blocks; j++) {
-          if (peer.remoteBitfield.get(j)) have++
-        }
-        return have
+      function replicate (peer) {
+        var stream = dat.archive.replicate({live: false})
+        stream.on('error', function (err) {
+          debug('replicate err', err)
+          activePeers--
+        })
+        stream.on('close', function () {
+          debug('stream close')
+          debug('peer count:', stats.peers)
+          activePeers--
+          var peers = stats.peers
+          if (peers.total === peers.complete) return done()
+        })
+        return stream
       }
-    }
+
+      function done () {
+        debug('done()', activePeers)
+        if (activePeers > 0) return // TODO: why getting -1?
+        var peers = stats.peers
+        if (peers.total !== peers.complete) return
+
+        // TODO: check there are no pending connections
+        // getting multiple closes
+        if (dat._closed) return
+
+        dat.close(cb)
+      }
+    })
   }
 }
