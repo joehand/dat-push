@@ -11,7 +11,7 @@
   "author": "Joe Hand <joe@hand.email> (https://joeahand.com/)",
   "license": "MIT",
   "dependencies": {
-    "dat-node": "^3.5.3",
+    "dat-node": "^3.5.4",
     "debug": "^3.0.1",
     "minimist": "^1.2.0",
     "pump": "^1.0.1"
