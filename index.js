@@ -6,12 +6,12 @@ var debug = require('debug')('dat-push')
 const WANT_TIMEOUT = 5e3
 
 module.exports = function (datPath, pushTo, cb) {
-  assert.equal(typeof datPath, 'string', 'dat-push: string path required')
+  assert.strictEqual(typeof datPath, 'string', 'dat-push: string path required')
   if (typeof pushTo === 'function') {
     cb = pushTo
     pushTo = null
   }
-  assert.equal(typeof cb, 'function', 'dat-push: callback required')
+  assert.strictEqual(typeof cb, 'function', 'dat-push: callback required')
   debug('dir', datPath)
 
   if (!pushTo) return push([])
@@ -33,11 +33,12 @@ module.exports = function (datPath, pushTo, cb) {
   }
 
   function push (whitelist) {
-    Dat(datPath, {createIfMissing: false}, function (err, dat) {
+    Dat(datPath, { createIfMissing: false }, function (err, dat) {
       if (err) return cb(err)
       var stats = dat.trackStats()
       var activePeers = 0
 
+      console.log('Importing newest files...')
       dat.importFiles(function (err) {
         if (err) return cb(err)
       })
@@ -55,7 +56,7 @@ module.exports = function (datPath, pushTo, cb) {
       })
 
       function replicate (peer) {
-        var stream = dat.archive.replicate({live: false})
+        var stream = dat.archive.replicate({ live: false })
         console.log('Replicating with', peer.host)
 
         const onClose = () => {

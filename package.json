@@ -12,11 +12,13 @@
   "license": "MIT",
   "dependencies": {
     "dat-node": "^3.5.3",
-    "debug": "^3.0.1",
+    "debug": "^4.1.1",
     "minimist": "^1.2.0",
-    "pump": "^1.0.1"
+    "pump": "^3.0.0"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "standard": "*"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/joehand/dat-push.git"

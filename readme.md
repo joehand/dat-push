@@ -27,7 +27,7 @@ dat-push ./existing/dat-dir hashbase.io
 
 ## License
 
-[MIT](LICENSE.md)
+[MIT](LICENSE)
 
 [npm-image]: https://img.shields.io/npm/v/dat-download.svg?style=flat-square
 [npm-url]: https://www.npmjs.com/package/dat-download
