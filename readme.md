@@ -29,9 +29,9 @@ dat-push ./existing/dat-dir hashbase.io
 
 [MIT](LICENSE)
 
-[npm-image]: https://img.shields.io/npm/v/dat-download.svg?style=flat-square
-[npm-url]: https://www.npmjs.com/package/dat-download
-[travis-image]: https://img.shields.io/travis/joehand/dat-download.svg?style=flat-square
-[travis-url]: https://travis-ci.org/joehand/dat-download
+[npm-image]: https://img.shields.io/npm/v/dat-push.svg?style=flat-square
+[npm-url]: https://www.npmjs.com/package/dat-push
+[travis-image]: https://img.shields.io/travis/joehand/dat-push.svg?style=flat-square
+[travis-url]: https://travis-ci.org/joehand/dat-push
 [standard-image]: https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat-square
 [standard-url]: http://npm.im/standard
