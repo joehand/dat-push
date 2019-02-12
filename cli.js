@@ -9,5 +9,4 @@ var args = require('minimist')(process.argv.slice(2), {
 var DatPush = require('.')
 DatPush(args.dir, args._, function (err) {
   if (err) throw err
-  console.log('push done, maybe?')
 })
