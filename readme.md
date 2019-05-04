@@ -22,7 +22,7 @@ datPush(process.cwd(), 'hashbase.io', function (err) {
 ```
 npm install -g dat-push
 
-dat-push ./existing/dat-dir hashbase.io
+dat-push --dir ./existing/dat-dir hashbase.io
 ```
 
 ## License

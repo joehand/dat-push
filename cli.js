@@ -8,7 +8,7 @@ var args = require('minimist')(process.argv.slice(2), {
 
 if (!args._.length) {
   console.error('Usage:')
-  console.error('  dat-push <dat-directory> [<server>]')
+  console.error('  dat-push [--dir <dat-directory>] [<server>]')
   process.exit(1)
 }
 
