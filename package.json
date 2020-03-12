@@ -13,7 +13,7 @@
   "dependencies": {
     "dat-node": "^3.5.3",
     "debug": "^4.1.1",
-    "minimist": "^1.2.0",
+    "minimist": "^1.2.5",
     "pump": "^3.0.0"
   },
   "devDependencies": {
